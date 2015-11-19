@@ -79,7 +79,12 @@ class Bouncer(object):
 
         except requests.Timeout:
             logger.error('Timed out after {} seconds attempting to reach: {}'.format(
-                timeout, self.service_url))
+                timeout, self.service_url), exc_info=True)
+            return self._offline_response(features, experiments)
+
+        except requests.ConnectionError:
+            logger.error('Connection error attempting to reach: {}'.format(
+                self.service_url), exc_info=True)
             return self._offline_response(features, experiments)
 
         if resp.status_code != 200:
@@ -88,23 +93,22 @@ class Bouncer(object):
         data = resp.json()
         return data['features'], data['experiments']
 
-    def _offline_response(self, features_requested, experiments_requested):
+    def _offline_response(self, requested_features, requested_experiments):
         """
         Called when the bouncer service can't be reached picks default values
-            from input if available.
-        :param features_requested:
-        :param experiments_requested:
+            from args if available.
+        :param requested_features:
+        :param requested_experiments:
         :return: features, experiments
         """
-        if not features_requested and not experiments_requested:
-            return {}, {}
-
         features, experiments = {}, {}
 
-        for feature, status in features_requested.iteritems():
-            features[feature] = status == 1
+        if requested_features:
+            for feature, status in requested_features.iteritems():
+                features[feature] = status == 1
 
-        for experiment, alternatives in experiments_requested.iteritems():
-            experiments[experiment] = alternatives[0]
+        if requested_experiments:
+            for experiment, alternatives in requested_experiments.iteritems():
+                experiments[experiment] = alternatives[0]
 
         return features, experiments
