@@ -1,4 +1,9 @@
+import logging
+
 import requests
+
+
+logger = logging.getLogger(__name__)
 
 
 class Experiment(object):
@@ -54,23 +59,52 @@ class Bouncer(object):
         """
         return requests.get(self.service_url + '/stats/').json()
 
-    def participate(self, uid, features=None, experiments=None):
+    def participate(self, uid, features=None, experiments=None, timeout=3):
         """
         Participate in an experiment.
         :param features: dict of feature_name: status
         :param experiments: dict of experiment_name: [list, of, alts]
+        :param timeout: timeout in seconds
         :return:
         """
         if not uid:
             raise ValueError("Missing parameter uid")
 
-        resp = requests.post(self.service_url + '/participate/', json={
-            'uid': uid,
-            'features': features or {},
-            'experiments': experiments or {}
-        })
+        try:
+            resp = requests.post(self.service_url + '/participate/', json={
+                'uid': uid,
+                'features': features or {},
+                'experiments': experiments or {}
+            }, timeout=timeout)
+
+        except requests.Timeout:
+            logger.error('Timed out after {} seconds attempting to reach: {}'.format(
+                timeout, self.service_url))
+            return self._offline_response(features, experiments)
+
         if resp.status_code != 200:
             raise ValueError(u"Bad request: " + resp.content)
 
         data = resp.json()
         return data['features'], data['experiments']
+
+    def _offline_response(self, features_requested, experiments_requested):
+        """
+        Called when the bouncer service can't be reached picks default values
+            from input if available.
+        :param features_requested:
+        :param experiments_requested:
+        :return: features, experiments
+        """
+        if not features_requested and not experiments_requested:
+            return {}, {}
+
+        features, experiments = {}, {}
+
+        for feature, status in features_requested.iteritems():
+            features[feature] = status == 1
+
+        for experiment, alternatives in experiments_requested.iteritems():
+            experiments[experiment] = alternatives[0]
+
+        return features, experiments
