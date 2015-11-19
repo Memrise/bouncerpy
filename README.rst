@@ -8,6 +8,8 @@ A python client for the bouncer_ A/B testing and feature switching service.
 Getting started
 ---------------
 
+A quick synopsis::
+
     from bouncer import Bouncer
 
     bc = Bouncer(service_url='http://localhost:5000')  # default value
@@ -21,4 +23,4 @@ Getting started
     bc.stats()
 
     # Participate in AB tests and get featured courses
-    features, experiments, bc.paricipate("youruid")
+    features, experiments = bc.paricipate("youruid")
