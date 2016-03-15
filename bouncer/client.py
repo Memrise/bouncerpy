@@ -59,20 +59,21 @@ class Bouncer(object):
         """
         return requests.get(self.service_url + '/stats/').json()
 
-    def participate(self, uid, features=None, experiments=None, timeout=3):
+    def participate(self, context, features=None, experiments=None, timeout=3):
         """
         Participate in an experiment.
+        :param context: dict including uid and additional context
         :param features: dict of feature_name: status
         :param experiments: dict of experiment_name: [list, of, alts]
         :param timeout: timeout in seconds
         :return:
         """
-        if not uid:
-            raise ValueError("Missing parameter uid")
+        if 'uid' not in context:
+            raise ValueError("Missing parameter uid in context")
 
         try:
             resp = requests.post(self.service_url + '/participate/', json={
-                'uid': uid,
+                'context': context,
                 'features': features or {},
                 'experiments': experiments or {}
             }, timeout=timeout)
