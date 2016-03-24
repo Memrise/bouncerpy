@@ -23,4 +23,4 @@ A quick synopsis::
     bc.stats()
 
     # Participate in AB tests and get featured courses
-    features, experiments = bc.paricipate({'uid': 'youruid'})
+    features, experiments = bc.paricipate({'uid': 'youruid'}, timeout=1, fallback=False)
