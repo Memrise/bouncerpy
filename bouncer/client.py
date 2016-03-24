@@ -59,13 +59,14 @@ class Bouncer(object):
         """
         return requests.get(self.service_url + '/stats/').json()
 
-    def participate(self, context, features=None, experiments=None, timeout=3):
+    def participate(self, context, features=None, experiments=None, timeout=3, fallback=True):
         """
         Participate in an experiment.
         :param context: dict including uid and additional context
         :param features: dict of feature_name: status
         :param experiments: dict of experiment_name: [list, of, alts]
         :param timeout: timeout in seconds
+        :param fallback: pick locally if service unavailable
         :return:
         """
         if 'uid' not in context:
@@ -78,15 +79,21 @@ class Bouncer(object):
                 'experiments': experiments or {}
             }, timeout=timeout)
 
-        except requests.Timeout:
-            logger.error('Timed out after {} seconds attempting to reach: {}'.format(
-                timeout, self.service_url), exc_info=True)
-            return self._offline_response(features, experiments)
+        except requests.Timeout as e:
+            if fallback:
+                logger.error('Timed out after {} seconds attempting to reach: {}'.format(
+                    timeout, self.service_url), exc_info=True)
+                return self._offline_response(features, experiments)
+            else:
+                raise e
 
         except requests.ConnectionError:
-            logger.error('Connection error attempting to reach: {}'.format(
-                self.service_url), exc_info=True)
-            return self._offline_response(features, experiments)
+            if fallback:
+                logger.error('Connection error attempting to reach: {}'.format(
+                    self.service_url), exc_info=True)
+                return self._offline_response(features, experiments)
+            else:
+                raise e
 
         if resp.status_code != 200:
             raise ValueError(u"Bad request: " + resp.content)
