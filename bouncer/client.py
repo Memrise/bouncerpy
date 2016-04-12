@@ -69,8 +69,11 @@ class Bouncer(object):
         :param fallback: pick locally if service unavailable
         :return:
         """
+
         if 'uid' not in context:
             raise ValueError("Missing parameter uid in context")
+
+        context['uid'] = str(context['uid'])
 
         try:
             resp = requests.post(self.service_url + '/participate/', json={
@@ -96,7 +99,7 @@ class Bouncer(object):
                 raise e
 
         if resp.status_code != 200:
-            raise ValueError(u"Bad request: " + resp.content)
+            raise ValueError(u"Error {} response: '{}'".format(resp.status, resp.content))
 
         data = resp.json()
         return data['features'], data['experiments']
