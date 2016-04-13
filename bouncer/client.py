@@ -75,6 +75,9 @@ class Bouncer(object):
 
         context['uid'] = str(context['uid'])
 
+        for feature, default in features.iteritems():
+            features[feature] = float(default)
+
         try:
             resp = requests.post(self.service_url + '/participate/', json={
                 'context': context,
