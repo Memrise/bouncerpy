@@ -99,7 +99,7 @@ class Bouncer(object):
                 raise e
 
         if resp.status_code != 200:
-            raise ValueError(u"Error {} response: '{}'".format(resp.status, resp.content))
+            raise ValueError(u"Error {} response: '{}'".format(resp.status_code, resp.content))
 
         data = resp.json()
         return data['features'], data['experiments']
