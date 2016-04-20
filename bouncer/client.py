@@ -119,7 +119,7 @@ class Bouncer(object):
 
         if requested_features:
             for feature, status in requested_features.iteritems():
-                features[feature] = status == 1
+                features[feature] = int(status)
 
         if requested_experiments:
             for experiment, alternatives in requested_experiments.iteritems():
