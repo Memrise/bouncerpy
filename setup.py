@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='bouncer',
-    version='0.0.5',
+    version='0.0.6',
     description='Client for Bouncer A/B testing service',
     long_description=open('README.rst').read(),
     author='Robin Edwards',
