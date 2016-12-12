@@ -75,7 +75,7 @@ class Bouncer(object):
 
         context['uid'] = str(context['uid'])
 
-        for feature, default in features.iteritems():
+        for feature, default in features.items():
             features[feature] = float(default)
 
         try:
@@ -93,7 +93,7 @@ class Bouncer(object):
             else:
                 raise e
 
-        except requests.ConnectionError:
+        except requests.ConnectionError as e:
             if fallback:
                 logger.error('Connection error attempting to reach: {}'.format(
                     self.service_url), exc_info=True)
@@ -118,11 +118,11 @@ class Bouncer(object):
         features, experiments = {}, {}
 
         if requested_features:
-            for feature, status in requested_features.iteritems():
+            for feature, status in requested_features.items():
                 features[feature] = int(status)
 
         if requested_experiments:
-            for experiment, alternatives in requested_experiments.iteritems():
+            for experiment, alternatives in requested_experiments.items():
                 experiments[experiment] = alternatives[0]
 
         return features, experiments
